@@ -12,7 +12,7 @@ use Yii;
  * @property integer $country_id
  * @property Country $country
  */
-class State extends \yii\db\ActiveRecord
+class State extends Base
 {
     /**
      * @inheritdoc

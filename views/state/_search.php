@@ -27,17 +27,28 @@ use kartik\select2\Select2;
     ?>
 
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <?=
             $form->field($model, 'country_id')->widget(Select2::classname(), [
                 'data' => ArrayHelper::map(Country::find()->asArray()->all(), 'id', 'name'),
                 'options' => ['placeholder' => Yii::t('app', '- Country -'), 'id' => 'cat-id'],
+                'pluginEvents' => [
+                    "change" => "function() { if($(this).val() == '') {
+                    $('#txt-name').val('');
+                    $('#txt-name').attr(\"disabled\", \"disabled\");
+                    }
+                    else
+                     $('#txt-name').prop(\"disabled\", false); }",
+                ],
                 'pluginOptions' => [
                     'allowClear' => true
                 ],
 
             ])->label(false);
             ?>
+        </div>
+        <div class="col-md-3">
+            <?= $form->field($model, 'name')->textInput(['disabled' => is_null($model->country_id) ? true : false, 'placeholder' => $model->getAttributeLabel('name'), 'id' => 'txt-name'])->label(false) ?>
         </div>
         <div class="col-md-2">
             <?= Html::submitButton(Yii::t('app', 'Search'), ['class' => 'btn btn-info']) ?>

@@ -9,7 +9,7 @@ use app\models\User;
 
 $this->pageTitle = Yii::t('app', 'View State');
 
-$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Users'), 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'States'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = Yii::t('app', 'View');
 ?>
 

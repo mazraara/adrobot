@@ -12,17 +12,19 @@ use yii\filters\VerbFilter;
 /**
  * CityController implements the CRUD actions for City model.
  */
-class CityController extends Controller
+class CityController extends BaseController
 {
+    public function allowed()
+    {
+        return [
+
+        ];
+    }
+
     public function behaviors()
     {
         return [
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'delete' => ['post'],
-                ],
-            ],
+
         ];
     }
 
@@ -32,8 +34,14 @@ class CityController extends Controller
      */
     public function actionIndex()
     {
+        Yii::$app->appLog->writeLog('List Cities');
+
         $searchModel = new CitySearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        $params = (Yii::$app->request->isGet ? Yii::$app->request->queryParams : (Yii::$app->request->isPost ? Yii::$app->request->bodyParams : array()));
+        Yii::$app->appLog->writeLog(print_r($params, true));
+
+        $dataProvider = $searchModel->search($params);
 
         return $this->render('index', [
             'searchModel' => $searchModel,
@@ -48,6 +56,8 @@ class CityController extends Controller
      */
     public function actionView($id)
     {
+
+        Yii::$app->appLog->writeLog('View User', ['id' => $id]);
         return $this->render('view', [
             'model' => $this->findModel($id),
         ]);
@@ -60,15 +70,23 @@ class CityController extends Controller
      */
     public function actionCreate()
     {
+        $sucMsg = Yii::t('app', 'City created.');
+        $errMsg = Yii::t('app', 'City create failed.');
+
         $model = new City();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else {
-            return $this->render('create', [
-                'model' => $model,
-            ]);
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->save()) {
+                Yii::$app->session->setFlash('success', $sucMsg);
+                return $this->redirect(['index']);
+            } else
+                Yii::$app->session->setFlash('error', $errMsg);
+
         }
+
+        return $this->render('create', [
+            'model' => $model,
+        ]);
     }
 
     /**
@@ -79,15 +97,23 @@ class CityController extends Controller
      */
     public function actionUpdate($id)
     {
+        $sucMsg = Yii::t('app', 'City updated.');
+        $errMsg = Yii::t('app', 'City update failed.');
+
         $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else {
-            return $this->render('update', [
-                'model' => $model,
-            ]);
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->save()) {
+                Yii::$app->session->setFlash('success', $sucMsg);
+                return $this->redirect(['index']);
+            } else
+                Yii::$app->session->setFlash('error', $errMsg);
+
         }
+
+        return $this->render('create', [
+            'model' => $model,
+        ]);
     }
 
     /**
@@ -98,7 +124,15 @@ class CityController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $sucMsg = Yii::t('app', 'City was successfully deleted.');
+        $errMsg = Yii::t('app', 'City could not be deleted.');
+
+        $model = $this->findModel($id);
+        if ($model->delete()) {
+            Yii::$app->session->setFlash('success', $sucMsg);
+        } else {
+            Yii::$app->session->setFlash('error', $errMsg);
+        }
 
         return $this->redirect(['index']);
     }

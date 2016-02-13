@@ -12,6 +12,7 @@ use app\models\City;
  */
 class CitySearch extends City
 {
+    public $countryId;
     /**
      * @inheritdoc
      */
@@ -19,7 +20,7 @@ class CitySearch extends City
     {
         return [
             [['id', 'state_id'], 'integer'],
-            [['name'], 'safe'],
+            [['name','countryId','state_id'], 'safe'],
         ];
     }
 
@@ -42,7 +43,9 @@ class CitySearch extends City
     public function search($params)
     {
         $query = City::find();
+        $query = City::find()->joinWith('state', false, 'INNER JOIN');
 
+//        print_r($query); exit;
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
         ]);
@@ -58,9 +61,10 @@ class CitySearch extends City
         $query->andFilterWhere([
             'id' => $this->id,
             'state_id' => $this->state_id,
+            'country_id' => $this->countryId,
         ]);
 
-        $query->andFilterWhere(['like', 'name', $this->name]);
+        $query->andFilterWhere(['like', 'City.name', $this->name]);
 
         return $dataProvider;
     }

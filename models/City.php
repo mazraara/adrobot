@@ -11,8 +11,10 @@ use Yii;
  * @property string $name
  * @property integer $state_id
  */
-class City extends \yii\db\ActiveRecord
+class City extends Base
 {
+    public $countryId;
+
     /**
      * @inheritdoc
      */
@@ -27,7 +29,7 @@ class City extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'state_id'], 'required'],
+            [['name', 'state_id', 'countryId'], 'required'],
             [['state_id'], 'integer'],
             [['name'], 'string', 'max' => 30]
         ];
@@ -41,7 +43,17 @@ class City extends \yii\db\ActiveRecord
         return [
             'id' => Yii::t('app', 'ID'),
             'name' => Yii::t('app', 'Name'),
-            'state_id' => Yii::t('app', 'State ID'),
+            'state_id' => Yii::t('app', 'State'),
+            'countryId' => Yii::t('app', 'Country'),
+
         ];
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getState()
+    {
+        return $this->hasOne(State::className(), ['id' => 'state_id']);
     }
 }

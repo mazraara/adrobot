@@ -1,37 +1,32 @@
 <?php
-
 use yii\helpers\Html;
 use yii\widgets\DetailView;
+use app\models\Role;
+use app\models\User;
 
 /* @var $this yii\web\View */
-/* @var $model app\models\City */
+/* @var $model app\models\User */
 
-$this->title = $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'Cities', 'url' => ['index']];
-$this->params['breadcrumbs'][] = $this->title;
+$this->pageTitle = Yii::t('app', 'View City');
+
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'States'), 'url' => ['index']];
+$this->params['breadcrumbs'][] = Yii::t('app', 'View');
 ?>
+
 <div class="city-view">
 
-    <h1><?= Html::encode($this->title) ?></h1>
-
-    <p>
-        <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a('Delete', ['delete', 'id' => $model->id], [
-            'class' => 'btn btn-danger',
-            'data' => [
-                'confirm' => 'Are you sure you want to delete this item?',
-                'method' => 'post',
-            ],
-        ]) ?>
-    </p>
-
-    <?= DetailView::widget([
+    <?=
+    DetailView::widget([
         'model' => $model,
         'attributes' => [
             'id',
             'name',
-            'state_id',
+            [
+                'label' => $model->getAttributeLabel('state_id'),
+                'value' => $model->state->name,
+            ],
         ],
-    ]) ?>
+    ])
+    ?>
 
 </div>
