@@ -1,0 +1,204 @@
+body {
+    background-color: #EDECEC;
+}
+
+.page {
+	margin-top:70px;
+}
+
+.page-popup {
+	margin-top:5px;
+}
+
+.card {
+    position: relative;
+    background: none repeat scroll 0% 0% #FFF;
+    box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.15);
+	margin-top: 10px;
+    padding-left: 30px;
+	padding-right: 30px;
+	padding-top: 20px;
+	padding-bottom: 30px;
+}
+
+.card .card-header:not(.ch-alt) {
+
+}
+
+.card .card-header {
+    position: relative;
+	padding-bottom: 10px;
+}
+
+.card-header > h2 {
+	margin-top:0px;
+}
+
+.card-breadcrumb {
+    background: #fff none repeat scroll 0 0;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+    margin-top: 0px;
+    padding: 0px;
+    position: relative;
+}
+
+.container-popup {
+    padding:5px;
+}
+
+.card-popup {
+    position: relative;
+    background: none repeat scroll 0% 0% #FFF;
+    box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.15);
+    margin-top: 0px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.breadcrumb {
+    background-color: #ffffff;
+    box-shadow: 0px 0px 0px rgba(0, 0, 0, 0);
+	border-radius: 0px;
+}
+
+.footer {
+	margin-top:5px;
+}
+
+.grid-view > table > thead {
+	background: #772953;
+}
+
+.grid-view > table > thead > tr > th > a{
+	 color: #ffffff;
+}
+
+.grid-view > table > thead > tr > th {
+    border-bottom: 0 solid #dddddd;
+}
+
+.grid-view > table > thead > tr > th {
+	color:#ffffff;
+}
+
+a {
+	color:#9E1F63;
+}
+
+.summary {
+    padding-bottom: 10px;
+	text-align: right;
+}
+
+div.required label:after {
+    content: " *";
+    color: red;
+}
+
+.form-inline > .form-group > input, select {
+	margin-bottom: 10px;
+}
+
+.inactive {
+	color:#AEA79F !important;
+}
+
+.inactive a {
+	color:#AEA79F !important;
+}
+
+.inv-amt {
+	text-align:right;
+}
+
+/* Dropdown menu */
+.dropdown-menu > .active > a, .dropdown-menu > .active > a:hover, .dropdown-menu > .active > a:focus {
+    background-color: #772953;
+    color: #ffffff;
+    outline: 0 none;
+    text-decoration: none;
+}
+
+.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
+    background-color: #772953;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+/* Panels */
+.panel-default > .panel-heading {
+    background-color: #E0DEDE;
+}
+
+/* Loigin Page */
+.login-page-content {
+	left:35%;
+	width:25%;
+	height:auto;
+	top:15%;
+	position:absolute;
+	background:#ffffff;
+	padding:20px;
+	box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.15);
+}
+
+.login-title {
+  margin: -20px -20px 21px;
+  line-height: 60px;
+  color: #ffffff;
+  text-align: center;
+  text-shadow: 0 1px white;
+  background: #772953;
+  -webkit-box-shadow: 0 1px whitesmoke;
+  font-size: 20px;
+  font-weight: 200;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2)
+}
+/* End */
+
+/* Table td > vertical-align: middle */
+.table tbody > tr > td {
+    vertical-align: middle;
+}
+
+/* Bootstrap - navbar-brand */
+.navbar > .container .navbar-brand, .navbar > .container-fluid .navbar-brand {
+    margin-left: 0px;
+}
+
+/* Bootstrap - navbar-right */
+.navbar-right {
+    float: right !important;
+    margin-right: 0px;
+}
+
+/* Search bar */
+.searchbar-items {
+	display: inline-block;
+	padding-right:5px
+}
+
+.searchbar-status {
+	display: inline-block;
+	padding-right:5px;
+	width:15%;
+}
+
+.searchbar-role {
+	display: inline-block;
+	padding-right:5px;
+	width:21%;
+}
+
+.searchbar-switch-case {
+	display: inline-block;
+	padding-right:5px;
+	width:25%;
+}
+
+.subsec-space {
+	padding-bottom:15px
+}
+
