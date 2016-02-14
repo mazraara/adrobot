@@ -24,8 +24,12 @@ use app\models\Base;
  * @property string $email
  * @property string $timeZone
  * @property string $roleName
+ * @property string $isEmailConfirmed
  * @property integer $type
  * @property integer $status
+ * @property integer $lastLoggedTime
+ * @property integer $lastVisitAgent
+ * @property integer $lastVisitIp
  * @property string $phone
  * @property string $createdAt
  * @property string $updatedAt
@@ -43,6 +47,10 @@ class User extends Base
     const ACTIVE = 1;
     const INACTIVE = 2;
 
+    const TYPE_SYSTEM_USER = -1;
+    const TYPE_OWNER = 1;
+    const TYPE_SUPPORTER = 2;
+
     // User gender
     const MALE = 1;
     const FEMALE = 2;
@@ -54,6 +62,8 @@ class User extends Base
     const SCENARIO_UPDATE = 'update';
     const SCENARIO_MY_ACCOUNT = 'myAccount';
     const SCENARIO_CHANGE_PASSWORD = 'changePassword';
+    const SCENARIO_REGISTER = 'register';
+    const SCENARIO_RESET_PASSWORD = 'resetPassword';
 
     public $confPassword;
     public $captcha;
@@ -67,10 +77,17 @@ class User extends Base
         self::INACTIVE => 'Inactive',
     );
 
+    private $_types = array(
+        self::TYPE_SYSTEM_USER => 'System User',
+        self::TYPE_OWNER => 'Owner',
+        self::TYPE_SUPPORTER => 'Supporter',
+    );
+
     private $_genders = array(
         self::MALE => 'Male',
         self::FEMALE => 'Female',
     );
+
     /**
      * @inheritdoc
      */
@@ -103,6 +120,7 @@ class User extends Base
     {
         return $this->_genders;
     }
+
     /**
      * Returns the user types.
      * @return array types array.
@@ -156,8 +174,21 @@ class User extends Base
             [['newPassword'], 'checkPasswordStrength', 'params' => ['min' => 7, 'allowEmpty' => false], 'on' => [self::SCENARIO_CHANGE_PASSWORD]],
             [['confPassword'], 'compare', 'compareAttribute' => 'newPassword', 'operator' => '==', 'type' => 'string', 'on' => [self::SCENARIO_CHANGE_PASSWORD]],
 
+            // Forgot password
+            [['email'], 'required', 'on' => [self::SCENARIO_RESET_PASSWORD]],
+            [['email'], 'email', 'on' => [self::SCENARIO_RESET_PASSWORD]],
+            [['email'], 'checkUserExist', 'on' => [self::SCENARIO_RESET_PASSWORD]],
+
+            // User registration
+            [['firstName', 'lastName', 'email', 'username', 'password', 'gender', 'dateOfBirth', 'confPassword', 'roleName', 'timeZone', 'captcha'], 'required', 'on' => [self::SCENARIO_REGISTER]],
+            [['password'], 'checkPasswordStrength', 'on' => [self::SCENARIO_REGISTER], 'params' => ['min' => 7, 'allowEmpty' => false]],
+            [['confPassword'], 'compare', 'compareAttribute' => 'password', 'on' => [self::SCENARIO_REGISTER], 'operator' => '=='],
+            ['captcha', 'captcha', 'captchaAction' => 'user/captcha', 'on' => [self::SCENARIO_REGISTER]],
+            [['username'], 'unique', 'on' => [self::SCENARIO_REGISTER]],
+
+
             // Safe
-            [['createdAt', 'updatedAt', 'captcha', 'password', 'about'], 'safe'],
+            [['createdAt', 'updatedAt', 'captcha', 'password', 'about', 'isEmailConfirmed', 'createdById'], 'safe'],
         ];
     }
 
@@ -187,6 +218,9 @@ class User extends Base
             'newPassword' => Yii::t('app', 'New Password'),
             'timeZone' => Yii::t('app', 'Time Zone'),
             'roleName' => Yii::t('app', 'Role'),
+            'lastVisitIp' => Yii::t('app', 'Last IP'),
+            'lastVisitAgent' => Yii::t('app', 'Last Visited Browser'),
+            'lastLoggedTime' => Yii::t('app', 'Last Logging Time'),
             'type' => Yii::t('app', 'Type'),
             'status' => Yii::t('app', 'Status'),
             'phone' => Yii::t('app', 'Phone'),
@@ -224,6 +258,21 @@ class User extends Base
                 $this->addError($attribute, Yii::t('app', '{attribute} is weak. {attribute} must contain at least {min} characters, at least one letter, at least one number and at least one symbol(-@_#&.).', ['min' => $params['min'], 'attribute' => $this->getAttributeLabel($attribute)]));
             }
         }
+    }
+
+    /**
+     * Check if user exist to reset password
+     * @param string $attribute attribute name
+     * @params array $params extra prameters to be passed to validation function
+     * @return null
+     */
+    public function checkUserExist($attribute, $params)
+    {
+        $model = self::find()->where('email=:email', [':email' => $this->email])->one();
+        if (is_null($model)) {
+            $this->addError($attribute, Yii::t('app', 'No matching account for the entered email.'));
+        } else
+            return true;
     }
 
     /**

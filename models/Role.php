@@ -22,6 +22,7 @@ class Role extends Base
 {
     const SUPER_ADMIN = 'SuperAdmin';
     const SYSTEM_ADMIN = 'SystemAdmin';
+    const SYSTEM_PARTNER = 'Partner';
 
     // To get selected permissions from user
     public $userPermissions = array();

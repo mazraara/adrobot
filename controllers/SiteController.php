@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\User;
 use Yii;
 use app\models\LoginForm;
 use app\models\ContactForm;
@@ -58,6 +59,11 @@ class SiteController extends BaseController
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
             Yii::$app->appLog->writeLog('Login success');
+            $user = User::findOne(Yii::$app->user->identity->id);
+            $user->lastVisitIp = $_SERVER['REMOTE_ADDR'];;
+            $user->lastVisitAgent = $_SERVER['HTTP_USER_AGENT'];
+            $user->lastLoggedTime = Yii::$app->util->getUtcDateTime();
+            $user->save(false);
             return $this->goBack();
         } else {
             return $this->render('login', [
@@ -71,5 +77,17 @@ class SiteController extends BaseController
         Yii::$app->appLog->writeLog('Logout success');
         Yii::$app->user->logout();
         return $this->redirect(['login']);
+    }
+
+    /**
+     * All language change requests come here and redirects to
+     * Previous page after changing the language
+     * @param string $lang Language identifier
+     */
+    public function actionChangeLang($lang)
+    {
+        Yii::app()->language = $lang;
+        Yii::app()->session['lang'] = $lang;
+        $this->redirect(Yii::$app->request->referrer);
     }
 }

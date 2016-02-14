@@ -55,8 +55,12 @@ $title = '' == $this->title ? Yii::$app->params['productName'] : Yii::$app->para
                         ['label' => Yii::t('app', 'Permissions'), 'url' => ['/permission/index'], 'visible' => Yii::$app->user->can('Permission.Index')],
                         ['label' => Yii::t('app', 'Roles'), 'url' => ['/role/index'], 'visible' => Yii::$app->user->can('Role.Index')],
                         ['label' => Yii::t('app', 'System Users'), 'url' => ['/user/index'], 'visible' => Yii::$app->user->can('User.Index')],
+                        ['label' => Yii::t('app', 'Portal Settings'), 'url' => ['/system/setting'], 'visible' => Yii::$app->user->can('System.Setting')],
+                        ['label' => Yii::t('app', 'Flush Cache'), 'url' => ['/system/flush-cache'], 'visible' => Yii::$app->user->can('System.FlushCache')],
+                        ['label' => Yii::t('app', 'Clear Asset'), 'url' => ['/system/clear-assets'], 'visible' => Yii::$app->user->can('System.ClearAssets')],
                     ],
-                ]
+                ],
+                ['label' => Yii::t('app', 'Setting'), 'url' => ['/setting/index'], 'visible' => Yii::$app->user->can('Hunt.Index')],
             ],
         ]);
         echo Nav::widget([

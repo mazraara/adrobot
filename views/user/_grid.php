@@ -21,7 +21,7 @@ Pjax::begin([
 GridView::widget([
     'id' => 'dataGrid',
     'dataProvider' => $dataProvider,
-    'tableOptions' => ['class'=>'table table-striped'],
+    'tableOptions' => ['class' => 'table table-striped'],
     'columns' => [
         'username',
         'firstName',
@@ -33,7 +33,7 @@ GridView::widget([
             'attribute' => 'status',
             'filter' => $model->statuses,
             'value' => function ($model) {
-                return $model->status === '1' ? Yii::t('app', 'Active') : Yii::t('app', 'InActive');
+                return $model->status == '1' ? Yii::t('app', 'Active') : Yii::t('app', 'InActive');
             }
         ],
         [
@@ -60,11 +60,11 @@ GridView::widget([
                     $return = '';
                     if (Yii::$app->user->can('User.Delete')) {
                         $return = Html::a('<span class="glyphicon glyphicon-trash"></span>', $url, [
-                                'class' => 'delete',
-                                'data' => [
-                                    'confirm' => Yii::t('app', 'Are you sure you want to delete this item?'),
-                                    'method' => 'post',
-                                ]
+                            'class' => 'delete',
+                            'data' => [
+                                'confirm' => Yii::t('app', 'Are you sure you want to delete this item?'),
+                                'method' => 'post',
+                            ]
                         ]);
                         if ($model->roleName == Role::SUPER_ADMIN) {
                             $return = '';

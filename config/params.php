@@ -1,9 +1,9 @@
 <?php
 
 return [
-    'supportEmail' => 'support@gmail.com',
+    'supportEmail' => 'admin@azydev.com',
     'productName' => 'Adrobot',
-    'adminEmail' => 'azraarshu@gmail.com',
+    'adminEmail' => 'admin@azydev.com',
     'salt' => '$r!lanka',
     'allowEmpty' => true,
     'accessDeniedUrl' => ['site/access-denied'],

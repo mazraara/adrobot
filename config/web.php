@@ -28,11 +28,16 @@ $config = [
             'useFileTransport' => false,
             'transport' => [
                 'class' => 'Swift_SmtpTransport',
-                'host' => 'in.mailjet.com',
-                'username' => '882e1f5a7e8393288b0e622a95ed3dc7',
-                'password' => '1de1796d95a02e1166e516740db0f5b9',
-                'port' => '25',
+                'host' => 'smtp.mandrillapp.com',
+                'username' => 'azraar90@gmail.com',
+                'password' => 'I0sPajfMpB6ot205u5cB-A',
+                'port' => '587',
                 'encryption' => 'tls',
+//                'host' => 'in.mailjet.com',
+//                'username' => '882e1f5a7e8393288b0e622a95ed3dc7',
+//                'password' => '1de1796d95a02e1166e516740db0f5b9',
+//                'port' => '25',
+//                'encryption' => 'tls',
             ]
         ],
         'log' => [

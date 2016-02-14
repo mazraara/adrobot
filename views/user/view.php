@@ -68,6 +68,9 @@ $this->params['breadcrumbs'][] = Yii::t('app', 'View');
                 'label' => $model->getAttributeLabel('status'),
                 'value' => $model->statuses[$model->status],
             ],
+            'lastVisitIp',
+            'lastVisitAgent',
+            'lastLoggedTime',
             'createdAt',
             'updatedAt',
             [

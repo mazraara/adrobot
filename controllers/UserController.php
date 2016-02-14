@@ -2,13 +2,18 @@
 
 namespace app\controllers;
 
+use app\models\Auth;
 use app\models\City;
+use app\models\Role;
 use app\models\State;
 use Yii;
 use app\models\User;
 use app\models\UserSearch;
 use yii\helpers\Json;
 use yii\web\NotFoundHttpException;
+use yii\helpers\Url;
+use yii\helpers\Html;
+
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
 
@@ -21,8 +26,13 @@ class UserController extends BaseController
     public function allowed()
     {
         return [
+            'User.Captcha',
             'User.GetStates',
-            'User.GetCities'
+            'User.GetCities',
+            'User.Register',
+            'User.EmailConfirm',
+            'User.ResetPassword',
+            'User.ForgetPassword',
         ];
     }
 
@@ -41,6 +51,145 @@ class UserController extends BaseController
                 'fixedVerifyCode' => YII_ENV_TEST ? 'testme' : null,
             ],
         ];
+    }
+
+    /**
+     * Creates a new User model.
+     * If creation is successful, the browser will be redirected to the 'view' page.
+     * @return mixed
+     */
+    public function actionRegister()
+    {
+        $this->layout = 'guest';
+
+        $model = new User();
+        $model->scenario = 'register';
+
+        if ($model->load(Yii::$app->request->post())) {
+            $model->roleName = Role::SYSTEM_PARTNER;
+            $model->isEmailConfirmed = 0;
+            $model->status = User::ACTIVE;
+            $model->createdAt = Yii::$app->util->getUtcDateTime();
+            $model->createdById = -1;
+            $model->type = User::TYPE_SUPPORTER;
+            if ($model->validate()) {
+                $password = $model->password;
+                $model->password = $model->encryptPassword();
+                try {
+                    if ($model->save(false)) {
+                        Yii::$app->appLog->writeLog("User registerd.", [$model->attributes]);
+                        $link = Url::toRoute(['user/email-confirm', 'q' => (string)$model->id], true);
+                        $message = Yii::t('app', 'Thank you for register with {name}. Please click {here} to complete your registration', [
+                            'name' => Yii::$app->params['productName'],
+                            'here' => Html::a(Yii::t('app', 'here'), $link)
+                        ]);
+
+                        $response = Yii::$app->mailer->compose('@app/views/emailTemplate/notificationTemplate', ['content' => $message])
+                            ->setFrom(Yii::$app->params['supportEmail'])
+                            ->setTo($model->email)
+                            ->setSubject(Yii::t('app', '{name} Registration', ['name' => Yii::$app->params['productName']]))
+                            ->send();
+
+                        if ($response) {
+                            Yii::$app->appLog->writeLog("Email confirmation mail sent.");
+                        } else {
+                            Yii::$app->appLog->writeLog("Email confirmation mail sending failed");
+                        }
+
+                        $model = new User();
+                        Yii::$app->session->setFlash('success', Yii::t('app', 'Thank you for registering with {name}. Please confirm your email to complete the registration.', ['name' => Yii::$app->params['productName']]));
+                        Yii::$app->appLog->writeLog("User registration success.", [$model->attributes]);
+                    } else {
+                        Yii::$app->appLog->writeLog("User registration failed.", [$model->attributes]);
+                        Yii::$app->session->setFlash('error', Yii::t('app', 'Registration failed.'));
+                    }
+                } catch (Exception $e) {
+                    Yii::$app->appLog->writeLog("User registration failed.", [$e->getMessage(), $model->attributes]);
+                    Yii::$app->session->setFlash('error', Yii::t('app', 'Registration failed.'));
+                }
+                $model->password = $password;
+            } else {
+                Yii::$app->appLog->writeLog("User registration failed. Validation failed.", [$model->errors]);
+            }
+        }
+
+        return $this->render('register', [
+            'model' => $model,
+        ]);
+    }
+
+    public function actionEmailConfirm($q)
+    {
+        $this->layout = 'guest';
+        $id = $q;//'557e8ac4dc78c19c12000029';
+        $model = $this->findModel($id);
+
+        if (null != $model) {
+            $model->isEmailConfirmed = 1;
+            try {
+                if ($model->save()) {
+                    Yii::$app->appLog->writeLog("User confirmed the email. Status updated", [$model->attributes]);
+                    Yii::$app->session->setFlash('success', Yii::t('app', 'Registration success. Click {here} to login.', ['here' => Html::a(Yii::t('app', '<strong>here</strong>'), ['site/login'])]));
+                } else {
+                    Yii::$app->appLog->writeLog("User confirmed the email. Status update failed", [$model->attributes]);
+                    Yii::$app->session->setFlash('error', Yii::t('app', 'Registration failed.'));
+                }
+            } catch (Exception $e) {
+                Yii::$app->appLog->writeLog("User confirmed the email. Status update failed ", [$e->getMessage(), $model->attributes]);
+                Yii::$app->session->setFlash('error', Yii::t('app', 'Registration failed.'));
+            }
+        } else {
+            Yii::$app->appLog->writeLog("User confirmed the email. But not registered.", [$model->attributes]);
+            Yii::$app->session->setFlash('error', Yii::t('app', 'Looks like you havent registered with us.'));
+        }
+
+        return $this->render('registerStatus', [
+            'model' => $model,
+        ]);
+    }
+
+
+    /**
+     * Reset advertiser password and email
+     * @param integer $id Advertiser id
+     * @return mixed
+     */
+    public function actionResetPassword($id)
+    {
+        $model = $this->findModel($id);
+        $newPassword = $model->getNewPassword();
+        $encryptedPw = $model->encryptPassword($newPassword);
+
+        $model->password = $encryptedPw;
+
+        try {
+            if ($model->save()) {
+
+                Yii::$app->session->setFlash('success', Yii::t('app', 'Password reset success.'));
+
+                $message = Yii::t('app', 'Dear {name}, Your {productName} password has been reset. New password is:{newPassword}', [
+                    'name' => $model->firstName,
+                    'productName' => Yii::$app->params['productName'],
+                    'newPassword' => $newPassword
+                ]);
+
+                $response = Yii::$app->mailer->compose('@app/views/emailTemplate/notificationTemplate', ['content' => $message])
+                    ->setFrom([Yii::$app->params['supportEmail'] => Yii::$app->params['productName']])
+                    ->setTo($model->email)
+                    ->setSubject(Yii::t('app', '{name} Reset Password', ['name' => Yii::$app->params['productName']]))
+                    ->send();
+
+                if (!$response) {
+                    Yii::$app->session->setFlash('error', Yii::t('app', 'Email sending failed. Try again later.'));
+                }
+            } else {
+                Yii::$app->session->setFlash('error', Yii::t('app', 'Password reset failed.'));
+            }
+        } catch (Exception $e) {
+            Yii::$app->session->setFlash('error', Yii::t('app', 'Password reset failed.'));
+        }
+
+        return $this->redirect(['advertiser']);
     }
 
     /**
@@ -89,13 +238,9 @@ class UserController extends BaseController
                 $selected = '';
                 foreach ($list as $i => $account) {
                     $out[] = ['id' => $account['id'], 'name' => $account['name']];
-//                    if ($i == 0) {
-//                        $selected = $account['id'];
-//                    }
                 }
                 // Shows how you can preselect a value
                 echo Json::encode(['output' => $out]);
-//                echo Json::encode(['output' => $out, 'selected' => $selected]);
                 return;
             }
         }
@@ -113,13 +258,9 @@ class UserController extends BaseController
                 $selected = '';
                 foreach ($list as $i => $account) {
                     $out[] = ['id' => $account['id'], 'name' => $account['name']];
-//                    if ($i == 0) {
-//                        $selected = $account['id'];
-//                    }
                 }
                 // Shows how you can preselect a value
                 echo Json::encode(['output' => $out]);
-//                echo Json::encode(['output' => $out, 'selected' => $selected]);
                 return;
             }
         }
@@ -302,84 +443,48 @@ class UserController extends BaseController
      * @param integer $id Advertiser id
      * @return mixed
      */
-    public function actionForgetPassword($id)
+    public function actionForgetPassword()
     {
-        $model = $this->findModel($id);
-        $newPassword = $model->getNewPassword();
-        $encryptedPw = $model->encryptPassword($newPassword);
+        $this->layout = 'forget_password';
+        $model = new User();
+        $model->scenario = 'resetPassword';
 
-        $model->password = $encryptedPw;
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            $model = User::find()->where('email=:email', [':email' => $model->email])->one();
+            $newPassword = $model->getNewPassword();
+            $encryptedPw = $model->encryptPassword($newPassword);
+            $model->password = $encryptedPw;
 
-        try {
-            if ($model->save()) {
+            try {
+                if ($model->save()) {
+                    Yii::$app->session->setFlash('success', Yii::t('app', 'Password reset success.'));
+                    $message = Yii::t('app', "Dear {name}, <br><br> Your {productName} password has been reset. <br><br> New password is:{newPassword}", [
+                        'name' => $model->firstName,
+                        'productName' => Yii::$app->params['productName'],
+                        'newPassword' => $newPassword
+                    ]);
 
-                Yii::$app->session->setFlash('success', Yii::t('app', 'Password reset success.'));
+                    $response = Yii::$app->mailer
+                        ->compose('@app/views/emailTemplate/notificationTemplate', ['content' => $message])
+                        ->setFrom(Yii::$app->params['supportEmail'])
+                        ->setTo($model->email)
+                        ->setSubject(Yii::t('app', '{name} Reset Password', ['name' => Yii::$app->params['productName']]))
+                        ->send();
 
-                $message = Yii::t('app', 'Dear {name}, Your {productName} password has been reset. New password is:{newPassword}', [
-                    'name' => $model->firstName,
-                    'productName' => Yii::$app->params['productName'],
-                    'newPassword' => $newPassword
-                ]);
-
-                $response = Yii::$app->mailer
-                    ->compose('@app/views/email-template/notificationTemplate', ['content' => $message])
-                    ->setFrom([Yii::$app->params['supportEmail'] => Yii::$app->params['productName']])
-                    ->setTo($model->email)
-                    ->setSubject(Yii::t('app', '{name} Reset Password', ['name' => Yii::$app->params['productName']]))
-                    ->send();
-
-                if (!$response) {
-                    Yii::$app->session->setFlash('error', Yii::t('app', 'Email sending failed. Try again later.'));
+                    if (!$response) {
+                        Yii::$app->session->setFlash('error', Yii::t('app', 'Email sending failed. Try again later.'));
+                    }
+                } else {
+                    Yii::$app->session->setFlash('error', Yii::t('app', 'Password reset failed.'));
                 }
-            } else {
+            } catch (Exception $e) {
                 Yii::$app->session->setFlash('error', Yii::t('app', 'Password reset failed.'));
             }
-        } catch (Exception $e) {
-            Yii::$app->session->setFlash('error', Yii::t('app', 'Password reset failed.'));
         }
 
-        return $this->redirect(['advertiser']);
-    }
-
-    public function actionGetLocation($type, $id)
-    {
-        try {
-            if (!isset($_GET['type']) || empty($_GET['type'])) {
-                throw new exception("Type is not set.");
-            }
-            $type = $_GET['type'];
-            if ($type == 'getCountries') {
-                $res = ArrayHelper::map(\app\models\Country::find()->all(), 'id', 'name');
-                $data = array('status' => 'success', 'tp' => 1, 'msg' => "Countries fetched successfully.", 'result' => $res);
-
-            }
-
-            if ($type == 'getStates') {
-                if (!isset($_GET['id']) || empty($_GET['id'])) {
-                    throw new exception("Country Id is not set.");
-                }
-                $countryId = $_GET['id'];
-                $res = ArrayHelper::map(\app\models\State::find()->where('country_id = :countryId', ['countryId' => $countryId])->all(), 'id', 'name');
-                $data = array('status' => 'success', 'tp' => 1, 'msg' => "States fetched successfully.", 'result' => $res);
-
-            }
-
-            if ($type == 'getCities') {
-                if (!isset($_GET['id']) || empty($_GET['id'])) {
-                    throw new exception("State Id is not set.");
-                }
-                $stateId = $_GET['id'];
-                $res = ArrayHelper::map(\app\models\City::find()->where('state_id = :stateId', ['stateId' =>
-                    $stateId])->all(), 'id', 'name');
-                $data = array('status' => 'success', 'tp' => 1, 'msg' => "Cities fetched successfully.", 'result' => $res);
-
-            }
-
-        } catch (Exception $e) {
-            $data = array('status' => 'error', 'tp' => 0, 'msg' => $e->getMessage());
-        } finally {
-            echo json_encode($data);
-        }
+        return $this->render('forget', [
+            'model' => $model,
+        ]);
     }
 
     /**
