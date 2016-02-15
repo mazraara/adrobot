@@ -22,6 +22,7 @@ class BaseController extends Controller
     public function beforeAction($action)
     {
         Yii::$app->appLog->action = Yii::$app->controller->id . '/' . Yii::$app->controller->action->id;
+        Yii::$app->language = isset(Yii::$app->session['lang']) ? Yii::$app->session['lang'] : 'en-US'; //todo: to be removed
 
         $controllerId = BaseInflector::camelize(Yii::$app->controller->id);
         $actionId = BaseInflector::camelize(Yii::$app->controller->action->id);

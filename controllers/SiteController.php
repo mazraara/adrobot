@@ -6,6 +6,9 @@ use app\models\User;
 use Yii;
 use app\models\LoginForm;
 use app\models\ContactForm;
+use yii\web\Controller;
+use yii\helpers\Url;
+use yii\helpers\BaseInflector;
 
 class SiteController extends BaseController
 {
@@ -37,6 +40,7 @@ class SiteController extends BaseController
             'Site.Error',
             'Site.Logout',
             'Site.Captcha',
+            'Site.ChangeLang',
         ];
     }
 
@@ -86,8 +90,8 @@ class SiteController extends BaseController
      */
     public function actionChangeLang($lang)
     {
-        Yii::app()->language = $lang;
-        Yii::app()->session['lang'] = $lang;
+        Yii::$app->language = $lang;
+        Yii::$app->session['lang'] = $lang;
         $this->redirect(Yii::$app->request->referrer);
     }
 }

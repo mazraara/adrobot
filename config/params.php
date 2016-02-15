@@ -16,4 +16,23 @@ return [
         'instructions' => 'Sorry didn\'t get that {link}',
     ],
     'copyright'=>'Azraar Azward',
+
+    // Languages for localization
+    'lang' => [
+        'en' => [
+            'identifier' => 'en_US',
+            'flagName' => 'United-Kingdom.png',
+            'name' => 'English',
+        ],
+        'fr' => [
+            'identifier' => 'fr-FR',
+            'flagName' => 'France.png',
+            'name' => 'Fran�ais',
+        ],
+        'pt' => [
+            'identifier' => 'pt',
+            'flagName' => 'Portugal.png',
+            'name' => 'Portugu�s',
+        ],
+    ],
 ];

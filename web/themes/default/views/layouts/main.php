@@ -23,7 +23,10 @@ $title = '' == $this->title ? Yii::$app->params['productName'] : Yii::$app->para
     <?php $this->head() ?>
 </head>
 <body>
-
+<?php $languages = array();
+foreach (Yii::$app->params['lang'] as $key => $langInfo) {
+    $languages[] = ['label' => '<img src="' . $this->theme->baseUrl . '/img/' . $langInfo['flagName'] . '" /> ' . Yii::t('app', $langInfo['name']), 'url' => array('/site/change-lang/', 'lang' => $langInfo['identifier'])];
+} ?>
 <?php $this->beginBody() ?>
 <div class="wrap">
     <?php
@@ -50,17 +53,16 @@ $title = '' == $this->title ? Yii::$app->params['productName'] : Yii::$app->para
                 ],
                 [
                     'label' => Yii::t('app', 'System'),
-                    'visible' => Yii::$app->user->canList(['Permission.Index', 'Role.Index', 'User.Index', 'AuditTrail.Index']),
+                    'visible' => Yii::$app->user->canList(['Permission.Index', 'Role.Index', 'User.Index']),
                     'items' => [
                         ['label' => Yii::t('app', 'Permissions'), 'url' => ['/permission/index'], 'visible' => Yii::$app->user->can('Permission.Index')],
                         ['label' => Yii::t('app', 'Roles'), 'url' => ['/role/index'], 'visible' => Yii::$app->user->can('Role.Index')],
                         ['label' => Yii::t('app', 'System Users'), 'url' => ['/user/index'], 'visible' => Yii::$app->user->can('User.Index')],
-                        ['label' => Yii::t('app', 'Portal Settings'), 'url' => ['/system/setting'], 'visible' => Yii::$app->user->can('System.Setting')],
                         ['label' => Yii::t('app', 'Flush Cache'), 'url' => ['/system/flush-cache'], 'visible' => Yii::$app->user->can('System.FlushCache')],
                         ['label' => Yii::t('app', 'Clear Asset'), 'url' => ['/system/clear-assets'], 'visible' => Yii::$app->user->can('System.ClearAssets')],
                     ],
                 ],
-                ['label' => Yii::t('app', 'Setting'), 'url' => ['/setting/index'], 'visible' => Yii::$app->user->can('Hunt.Index')],
+                ['label' => Yii::t('app', 'Settings'), 'url' => ['/setting/index'], 'visible' => Yii::$app->user->can('Setting.Index')],
             ],
         ]);
         echo Nav::widget([
@@ -74,6 +76,7 @@ $title = '' == $this->title ? Yii::$app->params['productName'] : Yii::$app->para
                         ['label' => Yii::t('app', 'My Account'), 'url' => ['/user/my-account'], 'visible' => Yii::$app->user->can('User.MyAccount')],
                         ['label' => Yii::t('app', 'Change Password'), 'url' => ['/user/change-password'], 'visible' => Yii::$app->user->can('User.ChangePassword')],
                         ['label' => Yii::t('app', 'Logout'), 'url' => ['/site/logout'], 'linkOptions' => ['data-method' => 'post']],
+                        ['label' => Yii::t('app', 'Language'), 'items' => $languages, 'itemOptions' => ['id' => 'lang']],
                     ],
                 ],
             ],
