@@ -23,7 +23,8 @@
         "yiisoft/yii2-jui": "~2.0.0",
         "kartik-v/yii2-widget-datepicker": "@dev",
         "kartik-v/yii2-widget-select2": "@dev",
-        "kartik-v/yii2-widget-depdrop": "@dev"
+        "kartik-v/yii2-widget-depdrop": "@dev",
+        "kartik-v/yii2-widget-fileinput": "@dev"
 
     },
     "require-dev": {

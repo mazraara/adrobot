@@ -281,13 +281,23 @@ class UserController extends BaseController
         $model->scenario = User::SCENARIO_CREATE;
 
         if ($model->load(Yii::$app->request->post())) {
+            // process uploaded image file instance
+            $image = $model->uploadImage();
+
             $model->password = $model->encryptPassword($model->formPassword);
             $model->type = User::SYSTEM;
             if ($model->saveModel()) {
+                // upload only if valid uploaded file instance found
+                if ($image !== false) {
+                    $path = $model->getImageFile();
+                    $image->saveAs($path);
+                }
                 Yii::$app->session->setFlash('success', $sucMsg);
                 return $this->redirect(['index']);
             } else {
                 Yii::$app->session->setFlash('error', $errMsg);
+                Yii::$app->appLog->writeLog("User create failed." . json_encode($model->getLastError()));
+
             }
         } else {
             $model->status = User::ACTIVE;
@@ -312,17 +322,31 @@ class UserController extends BaseController
         $errMsg = Yii::t('app', 'User update failed.');
 
         $model = $this->findModel($id);
+        $oldFile = $model->getImageFile();
+        $oldAvatar = $model->avatar;
+        $oldFileName = $model->fileName;
+
         $model->scenario = User::SCENARIO_UPDATE;
         $curPassword = $model->password;
 
         if ($model->load(Yii::$app->request->post())) {
-            if ('' == $model->formPassword) {
-                $model->password = $curPassword;
-            } else {
-                $model->password = $model->encryptPassword($model->formPassword);
+
+            // process uploaded image file instance
+            $image = $model->uploadImage();
+
+            // revert back if no valid file instance uploaded
+            if ($image === false) {
+                $model->avatar = $oldAvatar;
+                $model->fileName = $oldFileName;
             }
 
             if ($model->saveModel()) {
+                // upload only if valid uploaded file instance found
+                if ($image !== false && unlink($oldFile)) { // delete old and overwrite
+                    $path = $model->getImageFile();
+                    $image->saveAs($path);
+                }
+
                 Yii::$app->session->setFlash('success', $sucMsg);
                 return $this->redirect(['index']);
             } else {
@@ -348,6 +372,10 @@ class UserController extends BaseController
 
         $model = $this->findModel($id);
         if ($model->deleteModel()) {
+            if (!$model->deleteImage()) {
+                Yii::$app->session->setFlash('error', Yii::t('app', 'Error deleting image'));
+                Yii::$app->appLog->writeLog("Error deleting image.");
+            }
             Yii::$app->session->setFlash('success', $sucMsg);
         } else {
             Yii::$app->session->setFlash('error', $errMsg);

@@ -5,7 +5,10 @@ $config = [
     'id' => 'basic',
     'homeUrl' => ['site/index'],
     'basePath' => dirname(__DIR__),
-    'bootstrap' => ['log'],
+    'bootstrap' => [
+        'log',
+        'app\base\settings',
+    ],
     'components' => [
         'request' => [
             // !!! Insert a secret key in the following (if it is empty) - this is required by cookie validation

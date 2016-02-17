@@ -4,6 +4,12 @@ namespace app\models;
 
 use Yii;
 use app\models\Base;
+/**
+ * @var mixed image the attribute for rendering the file input
+ * widget for upload on the form
+ */
+use yii\web\UploadedFile;
+
 
 /**
  * This is the model class for table "User".
@@ -88,6 +94,8 @@ class User extends Base
         self::FEMALE => 'Female',
     );
 
+    public $image;
+
     /**
      * @inheritdoc
      */
@@ -150,6 +158,10 @@ class User extends Base
             [['streetAddress'], 'string', 'max' => 128],
             [['zip'], 'string', 'max' => 16],
             [['geoLocaton'], 'string', 'max' => 64],
+            [['isEmailConfirmed'], 'default', 'value' => 0],
+
+            [['avatar', 'fileName', 'image'], 'safe'],
+            [['image'], 'file', 'extensions' => 'jpg, gif, png'],
 
             // Create
             [['firstName', 'lastName', 'username', 'email', 'roleName', 'timeZone', 'gender', 'countryId', 'stateId', 'cityId', 'dateOfBirth'], 'required', 'on' => [self::SCENARIO_CREATE]],
@@ -228,7 +240,83 @@ class User extends Base
             'updatedAt' => Yii::t('app', 'Updated At'),
             'createdById' => Yii::t('app', 'Created By'),
             'updatedById' => Yii::t('app', 'Updated By'),
+            'fileName' => Yii::t('app', 'Image File Name'),
         ];
+    }
+
+    /**
+     * fetch stored image file name with complete path
+     * @return string
+     */
+    public function getImageFile()
+    {
+        return isset($this->avatar) ? Yii::$app->params['uploadPath'] . $this->avatar : null;
+    }
+
+    /**
+     * fetch stored image url
+     * @return string
+     */
+    public function getImageUrl()
+    {
+        // return a default image placeholder if your source avatar is not found
+        $avatar = isset($this->avatar) ? $this->avatar : 'default_user.jpg';
+        return Yii::$app->params['uploadUrl'] . $avatar;
+    }
+
+    /**
+     * Process upload of image
+     *
+     * @return mixed the uploaded image instance
+     */
+    public function uploadImage()
+    {
+        // get the uploaded file instance. for multiple file uploads
+        // the following data will return an array (you may need to use
+        // getInstances method)
+        $image = UploadedFile::getInstance($this, 'image');
+
+        // if no image was uploaded abort the upload
+        if (empty($image)) {
+            return false;
+        }
+
+        // store the source file name
+        $this->fileName = $image->name;
+        $test = (explode(".", $image->name));
+        $ext = end($test);
+
+        // generate a unique file name
+        $this->avatar = Yii::$app->security->generateRandomString() . ".{$ext}";
+
+        // the uploaded image instance
+        return $image;
+    }
+
+    /**
+     * Process deletion of image
+     *
+     * @return boolean the status of deletion
+     */
+    public function deleteImage()
+    {
+        $file = $this->getImageFile();
+
+        // check if file exists on server
+        if (empty($file) || !file_exists($file)) {
+            return false;
+        }
+
+        // check if uploaded file can be deleted on server
+        if (!unlink($file)) {
+            return false;
+        }
+
+        // if deletion successful, reset your file attributes
+        $this->avatar = null;
+        $this->fileName = null;
+
+        return true;
     }
 
     /**

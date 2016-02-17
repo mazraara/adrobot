@@ -43,7 +43,7 @@ foreach (Yii::$app->params['lang'] as $key => $langInfo) {
             'activateItems' => true,
             'activateParents' => true,
             'items' => [
-                ['label' => Yii::t('app', 'Adverts'), 'url' => ['/hunt/index'], 'visible' => Yii::$app->user->can('Hunt.Index')],
+                ['label' => Yii::t('app', 'Adverts'), 'url' => ['/post/index'], 'visible' => Yii::$app->user->can('Post.Index')],
                 ['label' => Yii::t('app', 'Locations'),
                     'visible' => Yii::$app->user->canList(['State.Index', 'City.Index']),
                     'items' => [

@@ -10,7 +10,7 @@ use yii\helpers\Url;
 use kartik\select2\Select2;
 use kartik\depdrop\DepDrop;
 use app\models\Country;
-
+use kartik\file\FileInput;
 use app\assets\TinyMceAsset;
 
 /* @var $this yii\web\View */
@@ -27,12 +27,41 @@ TinyMceAsset::register($this);
 
         <?php
         $form = ActiveForm::begin([
+            'options' => ['enctype' => 'multipart/form-data'], // important
             'id' => 'userForm',
             'enableClientValidation' => false,
         ]);
         ?>
 
 
+        <div class="row">
+            <div class="col-md-3">
+                <?= $form->field($model, 'fileName') ?>
+                <?php // display the image uploaded or show a placeholder
+                // you can also use this code below in your `view.php` file
+                $title = isset($model->fileName) && !empty($model->fileName) ? $model->fileName : 'Avatar';
+                echo Html::img($model->getImageUrl(), [
+                    'class' => 'img-thumbnail',
+                    'alt' => $title,
+                    'title' => $title
+                ]);
+
+                // your fileinput widget for single file upload
+                echo $form->field($model, 'image')->widget(FileInput::classname(), [
+                    'options' => ['accept' => 'image/*'],
+                    'pluginOptions' => ['allowedFileExtensions' => ['jpg', 'gif', 'png']]]);
+
+                /**
+                 * uncomment for multiple file upload
+                 * echo $form->field($model, 'image[]')->widget(FileInput::classname(), [
+                 * 'options'=>['accept'=>'image/*', 'multiple'=>true],
+                 * 'pluginOptions'=>['allowedFileExtensions'=>['jpg','gif','png']
+                 * ]);
+                 */
+
+                ?>
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-3">
                 <?php
@@ -59,7 +88,6 @@ TinyMceAsset::register($this);
                 <?= $form->field($model, 'confPassword')->passwordInput(['autocomplete' => 'off', 'class' => 'form-control password']) ?>
             </div>
         </div>
-
         <div class="row">
             <div class="col-md-3">
                 <?= $form->field($model, 'firstName') ?>

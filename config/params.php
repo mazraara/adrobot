@@ -15,7 +15,7 @@ return [
     'msgs' => [
         'instructions' => 'Sorry didn\'t get that {link}',
     ],
-    'copyright'=>'Azraar Azward',
+    'copyright' => 'Azraar Azward',
 
     // Languages for localization
     'lang' => [
